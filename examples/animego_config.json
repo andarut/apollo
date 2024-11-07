@@ -1,0 +1,14 @@
+{
+    "startup_timeout": 1,
+    "action_timeout": 1,
+    "data": {
+        "Kabaneri.of.the.Iron.Fortress": {
+            "URL": "https://animego.org/anime/kabaneri-zheleznoy-kreposti-966",
+            "VOICE": "Профессиональный многоголосый"
+        },
+        "Sousou.no.Frieren": {
+            "URL": "https://animego.org/anime/provozhayuschaya-v-posledniy-put-friren-2430",
+            "VOICE": "Студийная Банда"
+        }
+    }
+}

@@ -1,0 +1,19 @@
+{
+    "startup_timeout": 0,
+    "action_timeout": 0,
+    "video_loading_timeout": 20,
+    "data": {
+        "Attack.on.Titan.S01": {
+            "URL": "https://ataka-titanov.com/1-sezon/"
+        },
+        "Attack.on.Titan.S02": {
+            "URL": "https://ataka-titanov.com/2-sezon/"
+        },
+        "Attack.on.Titan.S03": {
+            "URL": "https://ataka-titanov.com/3-sezon/"
+        },
+        "Attack.on.Titan.S04": {
+            "URL": "https://ataka-titanov.com/4-sezon/"
+        }
+    }
+}
