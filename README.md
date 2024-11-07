@@ -7,7 +7,7 @@
 
 <h3>
 
-[Homepage](https://github.com/apollo/apollo) | [Documentation](https://docs.apollo.org/)
+[Homepage](https://github.com/andarut/apollo) | [Documentation](https://docs.apollo.org/)
 
 </h3>
 
@@ -21,3 +21,10 @@
 
 
 ## TODO
+- [ ] rewrite download.py to example for animego
+- [ ] full website download
+- [ ] fix modules import
+- [ ] add setup script
+- [ ] add documentation
+- [ ] add pylint
+- [ ] add github actions CI
