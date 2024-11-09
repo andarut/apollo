@@ -2,7 +2,7 @@ import os, filecmp, multiprocessing, subprocess, requests, sys, re, time, thread
 from rich.progress import Progress, BarColumn, TextColumn
 import m3u8
 
-from engine.logging import print_error, print_info, print_ok, print_warning, print_important
+from ..engine.logging import print_error, print_info, print_ok, print_warning, print_important
 
 from functools import wraps
 
@@ -55,7 +55,7 @@ def print_progress(url: str, path: str, progress, task):
 		diff_percent = (size_diff / file_size) * 100
 		if size_after == file_size: break
 		progress.update(task, advance=diff_percent)
-		
+
 
 def download_files(urls, paths, debug=False):
 
@@ -104,11 +104,11 @@ def download_m3u8(m3u8_url: str, path: str, debug=False):
 	if debug:
 		print_info(f"downloading {len(paths)} chunks")
 	download_files(urls, paths, False)
-	
+
 	with open('file_list.txt', 'w+') as f:
 		for ts_path in paths:
 			f.write(f"file '{ts_path}'\n")
-	
+
 	if debug:
 		print_info(f"concating {len(paths)} chunks")
 	os.system(f"ffmpeg -hide_banner -loglevel panic -y -f concat -safe 0 -i 'file_list.txt' -c copy '{path}'")
@@ -119,7 +119,7 @@ def download_m3u8(m3u8_url: str, path: str, debug=False):
 		print_ok(f"downloaded {path}")
 
 def download_video(base_url: str, filename: str, debug=False):
-	
+
 	if debug:
 		print_info(f"download_video filename={filename} base_url={base_url}")
 

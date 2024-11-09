@@ -2,12 +2,9 @@
 
 import json, time, os, sys, multiprocessing
 
-# TODO: fix later
-sys.path.append("..")
-
-from downloader.video import download_files, download_m3u8
-from engine.logging import print_error, print_info, print_ok, print_warning
-from engine.engine import Engine
+from ..apollo.downloader.video import download_files, download_m3u8
+from ..apollo.engine.logging import print_error, print_info, print_ok, print_warning
+from ..apollo.engine.engine import Engine
 
 DEBUG = True
 

@@ -21,7 +21,7 @@
 
 
 ## TODO
-- [ ] rewrite download.py to example for animego
+- [x] rewrite download.py to example for animego
 - [ ] full website download
 - [ ] fix modules import
 - [ ] add setup script

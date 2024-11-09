@@ -3,7 +3,7 @@ from __future__ import annotations
 from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.common.keys import Keys
 
-from engine.logging import print_info, print_ok, print_error, print_warning
+from .logging import print_info, print_ok, print_error, print_warning
 
 class Element:
 
