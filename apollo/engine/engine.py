@@ -16,6 +16,19 @@ from .logging import print_info, print_error, print_ok, print_warning
 
 os.environ["PYTHONTRACEMALLOC"] = '1'
 
+class By:
+    """Set of supported locator strategies."""
+
+    ID = "id"
+    XPATH = "xpath"
+    LINK_TEXT = "link text"
+    PARTIAL_LINK_TEXT = "partial link text"
+    NAME = "name"
+    TAG_NAME = "tag name"
+    CLASS_NAME = "class name"
+    CSS_SELECTOR = "css selector"
+
+
 class Engine:
 
 	ACTION_TIMEOUT = 0
@@ -74,14 +87,14 @@ class Engine:
 
 		return element
 
-	def find_elements(self, name: str, class_name: str) -> List[Element]:
+	def find_elements(self, name: str, by=By.CLASS_NAME, value="") -> List[Element]:
 		if self.DEBUG:
-			print_info(f"find elements name={name} by class_name={class_name}")
+			print_info(f"find elements name={name} by={by} value={value}")
 
 		elements = []
 
 		try:
-			for el in self.driver.find_elements(By.CLASS_NAME, class_name):
+			for el in self.driver.find_elements(by, value):
 				element = Element(name, "")
 				element.selenium_element = el
 				elements.append(element)

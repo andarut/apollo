@@ -3,12 +3,20 @@
 	"action_timeout": 1,
 	"ads_timeout": 120,
 	"data": {
+		"Dandandan": {
+			"URL": "https://animego.org/anime/dandadan-2647",
+			"VOICE": "Студийная Банда"
+		},
 		"Kabaneri.of.the.Iron.Fortress": {
 			"URL": "https://animego.org/anime/kabaneri-zheleznoy-kreposti-966",
 			"VOICE": "Профессиональный многоголосый"
 		},
 		"Sousou.no.Frieren": {
 			"URL": "https://animego.org/anime/provozhayuschaya-v-posledniy-put-friren-2430",
+			"VOICE": "Студийная Банда"
+		},
+		"Hells.paradise": {
+			"URL": "https://animego.org/anime/adskiy-ray-s1-2278",
 			"VOICE": "Студийная Банда"
 		}
 	}

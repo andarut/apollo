@@ -6,7 +6,7 @@ sys.path.append("..")
 
 from apollo.downloader.video import download_file, download_files, download_m3u8
 from apollo.engine.logging import print_error, print_info, print_ok, print_warning
-from apollo.engine.engine import Engine
+from apollo.engine.engine import Engine, By
 
 DEBUG = True
 
@@ -124,8 +124,6 @@ def download_m4s_chunks(j, base_url: str, path: str, debug=False):
 
 def download_episode(base_urls: dict, url, VOICE, i, button_18=False, single_episode=False):
 
-	print(len(base_urls.keys()))
-
 	def retry():
 		engine.quit()
 		download_episode(base_urls, url, VOICE, i, button_18, single_episode)
@@ -160,7 +158,7 @@ def download_episode(base_urls: dict, url, VOICE, i, button_18=False, single_epi
 
 	# select voice
 	try:
-		AUDIO_BUTTON = [el for el in engine.find_elements("audio", "video-player-toggle-item") if el.text() == VOICE][0]
+		AUDIO_BUTTON = [el for el in engine.find_elements("audio", By.CLASS_NAME,"video-player-toggle-item") if el.text() == VOICE][0]
 		engine.click(AUDIO_BUTTON)
 	except IndexError:
 		print_warning("VOICES not found, retrying")
@@ -234,7 +232,7 @@ def download(dir, url, VOICE):
 	try:
 		epidods_count = int(EPISODS_COUNT_TEXT.text())
 	except ValueError:
-		epidods_count = 1
+		epidods_count = 7
 
 	AGING_TEXT = engine.find_element(
 		"AGING_TEXT",
@@ -262,11 +260,12 @@ def download(dir, url, VOICE):
 	while i <= epidods_count:
 		if DEBUG:
 			print_info(f"create process for i={i}")
-		process = multiprocessing.Process(target=download_episode,
-			args=(base_urls, url, VOICE, i, "18" in AGING, epidods_count == 1)
-		)
-		processes.append(process)
-		process.start()
+		# process = multiprocessing.Process(target=download_episode,
+		# 	args=(base_urls, url, VOICE, i, True, epidods_count == 1)
+		# )
+		# processes.append(process)
+		# process.start()
+		download_episode(base_urls, url, VOICE, i, True, epidods_count == 1)
 		i += 1
 
 	for process in processes:
@@ -298,5 +297,5 @@ def download(dir, url, VOICE):
 	download_urls()
 
 if __name__ == '__main__':
-	season = "Kabaneri.of.the.Iron.Fortress"
+	season = "Hells.paradise"
 	download(season, config["data"][season]["URL"], config["data"][season]["VOICE"])
