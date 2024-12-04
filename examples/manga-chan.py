@@ -10,18 +10,20 @@ from apollo.engine.engine import Engine, By
 
 DEBUG = True
 
-# URL = "https://manga-chan.me/manga/148063-chainsaw-man-2.html"
-# URL = "https://manga-chan.me/download/95944-jujutsu-kaisen.html"
-URL = "https://manga-chan.me/download/92565-jigokuraku.html"
+with open("manga-chan_config.json") as config_file:
+	config = json.loads(config_file.read())
 
-def parse_chapter(link, i, urls):
-    engine = Engine(URL, False)
+STARTUP_TIMEOUT = config["startup_timeout"]
+ACTION_TIMEOUT = config["action_timeout"]
+
+def parse_chapter(url, link, i, urls):
+    engine = Engine(url, False)
     try:
         href = engine.find_elements("href", By.PARTIAL_LINK_TEXT, link)[0]
     except IndexError:
         engine.quit()
         print(f"retry {link}")
-        parse_chapter(link, i, urls)
+        parse_chapter(url, link, i, urls)
     engine.click(href)
     for request in engine.driver.requests:
         if ".zip" in request.url:
@@ -32,24 +34,23 @@ def parse_chapter(link, i, urls):
 def download_url(url, link):
     os.system(f'wget -O "{link}" "{url}"')
 
-def download():
-    engine = Engine(URL, DEBUG)
+def download(filename, url):
+    engine = Engine(url, DEBUG)
     hrefs = engine.find_elements("hrefs", By.TAG_NAME, "a")
     links = []
     for href in hrefs:
         link = href.get("href")
         if "download.php" in link:
-        # if "online" in link:
             links.append(href.selenium_element.text)
     engine.quit()
-    
+
     manager = multiprocessing.Manager()
     urls = manager.dict()
 
     for i in range(len(links)):
         link = links[i]
         print(f"parse {link}")
-        parse_chapter(link, i, urls)
+        parse_chapter(url, link, i, urls)
 
 
     processes = []
@@ -69,9 +70,10 @@ def download():
         os.system(f"unzip {link} -d {folder}")
         os.system(f"magick mogrify -format png {folder}/*.avif")
         os.system(f"magick mogrify -format png {folder}/*.jpg")
-        os.system(f"magick convert {folder}/*.png {folder}.pdf")
+        os.system(f"magick {folder}/*.png {folder}.pdf")
 
-    os.system(f"pdfunite *.pdf JJK.pdf")
+    os.system(f"pdfunite *.pdf {filename}.pdf")
 
 if __name__ == '__main__':
-    download()
+	anime = "Hells_paradise"
+	download(anime, config["data"][anime])
