@@ -4,7 +4,7 @@ import json, time, os, sys, multiprocessing
 
 sys.path.append("..")
 
-from apollo.downloader.video import download_files, download_m3u8
+from apollo.downloader.video import download_files, download_m3u8, download_file
 from apollo.engine.logging import print_error, print_info, print_ok, print_warning
 from apollo.engine.engine import Engine
 
@@ -29,10 +29,14 @@ def download_episode(href, urls: dict):
     )
     engine.driver.switch_to.frame(PLAYER_FRAME.selenium_element)
 
+    time.sleep(5)
     PLAY_BUTTON = engine.find_element(
         "PLAY_BUTTON",
         '/html/body/div[1]/div[5]/a'
     )
+    if PLAY_BUTTON.is_none():
+        download_episode(href, urls)
+        return
     engine.click(PLAY_BUTTON)
     time.sleep(VIDEO_LOADING_TIMEOUT)
 
@@ -57,7 +61,7 @@ def download(dir, url):
     engine.STARTUP_TIMEOUT = STARTUP_TIMEOUT
     engine.ACTION_TIMEOUT = ACTION_TIMEOUT
     engine.zoom(30)
-    hrefs = [a.get("href") for a in engine.find_elements("EPISODE_i", "one-series")]
+    hrefs = [a.get("href") for a in engine.find_elements("EPISODE_i", value="one-series")]
     engine.quit()
 
     if DEBUG:
@@ -70,9 +74,10 @@ def download(dir, url):
     for href in hrefs:
         if DEBUG:
             print_info(f"create process for href={href}")
-        process = multiprocessing.Process(target=download_episode, args=(href, urls,))
-        processes.append(process)
-        process.start()
+        # process = multiprocessing.Process(target=download_episode, args=(href, urls,))
+        # processes.append(process)
+        # process.start()
+        download_episode(href, urls)
 
     for process in processes:
         process.join()
@@ -87,13 +92,15 @@ def download(dir, url):
 
     for i in range(len(hrefs)):
         path = f"{dir}/{dir}.E{(i+1):02}.mp4"
-        url = urls[hrefs[i]]
-        download_m3u8(url, path, DEBUG)
+        url = urls[hrefs[i]].replace(":hls:manifest.m3u8", "")
+        print(url, path)
+        # download_m3u8(url, path, DEBUG)
+        download_file(url, path, DEBUG)
 
 
 # for season in config["data"].keys():
 #     download(season, config["data"][season]["URL"])
 
 if __name__ == '__main__':
-    season = "Attack.on.Titan.S02"
+    season = "Attack.on.Titan.S04"
     download(season, config["data"][season]["URL"])

@@ -1,6 +1,6 @@
 #!../.venv/bin/python3
 
-import json, time, os, sys, multiprocessing
+import json, time, os, sys, multiprocessing, glob
 
 sys.path.append("..")
 
@@ -52,7 +52,6 @@ def download(filename, url):
         print(f"parse {link}")
         parse_chapter(url, link, i, urls)
 
-
     processes = []
     for key, value in urls.items():
         link = links[key]
@@ -75,5 +74,26 @@ def download(filename, url):
     os.system(f"pdfunite *.pdf {filename}.pdf")
 
 if __name__ == '__main__':
-	anime = "Hells_paradise"
-	download(anime, config["data"][anime])
+	anime = "Jujutsu_Kaisen"
+	# download(anime, config["data"][anime])
+	paths = []
+	for filepath in glob.glob("*.pdf"):	
+		if "jujutsu-kaisen" in filepath:
+			v, ch = filepath.replace("jujutsu-kaisen_", "").replace("v", "").replace("ch", "").replace(".pdf", "").split("_")
+			v = int(v)
+			if '.' in ch:
+				ch = float(ch)
+			else:
+				ch = int(ch)
+			new_filepath = f"jk{ch:03}.pdf"
+			paths.append(new_filepath)
+			os.system(f"mv {filepath} {new_filepath}")
+		else:
+			paths.append(filepath)
+	paths.sort()
+	string = ""
+	for path in paths:
+		string += f"{path} "
+	os.system(f"pdfunite {string} {anime}.pdf")
+
+	# os.system(f"gs -q -dNOPAUSE -dBATCH -sDEVICE=pdfwrite -sOutputFile={anime}_.pdf {string}")

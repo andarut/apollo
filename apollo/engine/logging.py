@@ -1,3 +1,4 @@
+from functools import lru_cache
 import inspect
 
 HEADER = '\033[95m'
@@ -9,7 +10,6 @@ RED = '\033[91m'
 END = '\033[0m'
 BOLD = '\033[1m'
 UNDERLINE = '\033[4m'
-
 
 def color_print(text: str, color: str):
     print("[" + inspect.stack()[2].function.lower() + "]: " + color + text + END)

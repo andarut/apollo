@@ -18,6 +18,97 @@
 		"Hells.paradise": {
 			"URL": "https://animego.org/anime/adskiy-ray-s1-2278",
 			"VOICE": "Студийная Банда"
+		},
+		"Death.Note": {
+			"URL": "https://www.google.com/search?q=animego+death+note&sca_esv=fa27aa6c1a2c9000&sxsrf=ADLYWIK3uIA03uv1WsH7EJ7wYWoqtyOknQ%3A1734022126194&source=hp&ei=7hNbZ8jOCbSrxc8P7pjagA8&iflsig=AL9hbdgAAAAAZ1sh_oyj-KEP93HlX8Lic4LfCajwI_q3&ved=0ahUKEwjI_fLm16KKAxW0VfEDHW6MFvAQ4dUDCBc&uact=5&oq=animego+death+note&gs_lp=Egdnd3Mtd2l6IhJhbmltZWdvIGRlYXRoIG5vdGVIyhxQAFiHGnABeACQAQCYAdABoAHjGKoBBjAuMTcuMrgBA8gBAPgBAZgCCqACtQ7CAgQQIxgnwgIKECMYgAQYJxiKBcICCxAuGIAEGNEDGMcBwgIFEAAYgATCAgUQLhiABMICCBAAGIAEGMsBwgIHEAAYgAQYCsICChAAGIAEGAoYywHCAggQLhiABBjLAcICChAuGIAEGAoYywHCAgcQLhiABBgKwgIKEC4YCBgKGA0YHpgDAJIHBTAuOC4yoAfUcg&sclient=gws-wiz",
+			"VOICE": "СВ-Дубль"
+		},
+		"The.Gene.of.AI": {
+			"URL": "https://animego.org/anime/geny-iskusstvennogo-intellekta-2340",
+			"VOICE": "AniLibria"
+		},
+		"Tokyo.Ghoul.Pinto": {
+			"URL": "https://animego.org/anime/tokiyskiy-gul-pinto-246",
+			"VOICE": "AniDUB"
+		},
+		"Tokyo.Ghoul.Jack": {
+			"URL": "https://animego.org/anime/tokiyskiy-gul-dzhek-247",
+			"VOICE": "AniLibria"
+		},
+		"Tokyo.Ghoul.S01": {
+			"URL": "https://animego.org/anime/tokyo-ghoul-sv1-243",
+			"VOICE": "AniLibria"
+		},
+		"Tokyo.Ghoul.S02": {
+			"URL": "https://animego.org/anime/tokiyskiy-gul-2-244",
+			"VOICE": "AniLibria"
+		},
+		"Tokyo.Ghoul.S03": {
+			"URL": "https://animego.org/anime/tokyo-ghoul-re-245",
+			"VOICE": "AniLibria"
+		},
+		"Tokyo.Ghoul.S04": {
+			"URL": "https://animego.org/anime/tokyo-ghoul-re-2nd-season-709",
+			"VOICE": "AniLibria"
+		},
+		"Chainsaw.Man": {
+			"URL": "https://animego.org/anime/chelovek-benzopila-2119",
+			"VOICE": "Профессиональный многоголосый"
+		},
+		"Death.Note.Film": {
+			"URL": "https://animego.org/anime/tetrad-smerti-perezapis-glazami-boga-96",
+			"VOICE": "AniDUB"
+		},
+		"Dr.Stone.S01": {
+			"URL": "https://animego.org/anime/dr-stone-2v-1105",
+			"VOICE": "Профессиональный многоголосый"
+		},
+		"Dr.Stone.S02": {
+			"URL": "https://animego.org/anime/doktor-stoun-kamennye-voyny-1698",
+			"VOICE": "Профессиональный многоголосый"
+		},
+		"Dr.Stone.S03": {
+			"URL": ""
+		},
+		"No.Guns.Life.S01": {
+			"URL": "https://animego.org/anime/zhizn-bez-oruzhiya-1272",
+			"VOICE": "Студийная Банда"
+		},
+		"No.Guns.Life.S02": {
+			"URL": "https://animego.org/anime/zhizn-bez-oruzhiya-2-1583",
+			"VOICE": "Студийная Банда"
+		},
+		"Jujutsu.Kaisen.S01": {
+			"URL": "https://animego.org/anime/magicheskaya-bitva-1635",
+			"VOICE": "Профессиональный многоголосый"
+		},
+		"Jujutsu.Kaisen.S02": {
+			"URL": "https://animego.org/anime/magicheskaya-bitva-2-2332",
+			"VOICE": "Профессиональный многоголосый"
+		},
+		"Jujutsu.Kaisen.Film": {
+			"URL": "https://animego.org/anime/magicheskaya-bitva-0-film-2132",
+			"VOICE": "Профессиональный многоголосый"
+		},
+		"Naruto": {
+			"URL": "https://animego.org/anime/naruto-102",
+			"VOICE": "2x2"
+		},
+		"Naruto Shippuden": {
+			"URL": "https://animego.org/anime/naruto-uragannye-hroniki-103",
+			"VOICE": "2x2"
+		},
+		"One.Piece": {
+			"URL": "https://animego.org/anime/van-pis-65",
+			"VOICE": "2x2"
+		},
+		"Solo.Leveling.S01": {
+			"URL": "https://animego.org/anime/podnyatie-urovnya-v-odinochku-s1-2477",
+			"VOICE": "Студийная Банда"
+		},
+		"Solo.Leveling.S02": {
+			"URL": "https://animego.org/anime/podnyatie-urovnya-v-odinochku-2-vosstante-iz-teni-2723",
+			"VOICE": "Студийная Банда"
 		}
 	}
 }

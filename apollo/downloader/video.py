@@ -1,6 +1,7 @@
 import os, filecmp, multiprocessing, subprocess, requests, sys, re, time, threading
 from rich.progress import Progress, BarColumn, TextColumn
 import m3u8
+from typing import Iterable, Tuple
 
 from ..engine.logging import print_error, print_info, print_ok, print_warning, print_important
 
@@ -18,31 +19,16 @@ def measure(func):
     return wrapper
 
 
-def download_file(url: str, path: str, debug=False):
-	# os.system(f"""curl '{url}' \
-	# -s \
-	# -H 'Accept: */*' \
-	# -H 'Accept-Language: ru,en;q=0.9' \
-	# -H 'Connection: keep-alive' \
-	# -H 'Origin: https://aniboom.one' \
-	# -H 'Referer: https://aniboom.one/' \
-	# -H 'Sec-Fetch-Dest: empty' \
-	# -H 'Sec-Fetch-Mode: cors' \
-	# -H 'Sec-Fetch-Site: cross-site' \
-	# -H 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 YaBrowser/24.1.0.0 Safari/537.36' \
-	# -H 'sec-ch-ua: "Not_A Brand";v="8", "Chromium";v="120", "YaBrowser";v="24.1", "Yowser";v="2.5"' \
-	# -H 'sec-ch-ua-mobile: ?0' \
-	# -H 'sec-ch-ua-platform: "macOS"' \
-	# --compressed \
-	# -o {path} > /dev/null""")
-	os.system(f"wget -qO {path} {url}")
+def download_file(url: str, path: str, headers: Iterable[Tuple[str, str]], debug=False):
+	curl_command = f"curl '{url}'" + "".join([f"-H {key}: {value} \\ " for key, value in headers]) + "-o {path} > /dev/null"
+	os.system(curl_command)
+	
 	try:
 		_ = os.stat(path).st_size
 	except FileNotFoundError:
-		print_error("curl error")
-		download_file(url, path)
-	# if debug:
-	# 	print_ok(f"downloaded path={path} url={url}")
+		print_error(f"curl error for url={url} path={path}, headers={headers}, command={curl_command}")
+	if debug:
+		print_ok(f"downloaded path={path} url={url}")
 
 def print_progress(url: str, path: str, progress, task):
 	response = requests.head(url, allow_redirects=True)
@@ -88,22 +74,84 @@ def download_files(urls, paths, debug=False):
 	for process in processes:
 		process.join()
 
+# @measure
+# def download_m3u8(m3u8_url: str, path: str, debug=False):
+# 	if debug:
+# 		print_info(f"download_m3u8 path={path}")
+
+# 	# download m3u8 (need to download due to using headers and not be stuck on 403)
+# 	m3u8_path = os.path.basename(m3u8_url)
+# 	download_file(m3u8_url, m3u8_path)
+
+# 	playlist = m3u8.load(m3u8_path)
+# 	urls = []
+# 	paths = []
+# 	for segment in playlist.segments:
+# 		url = segment.uri if segment.uri.startswith('http') else os.path.join(os.path.dirname(m3u8_url), segment.uri)
+# 		urls.append(url)
+# 		paths.append(os.path.basename(url.replace(".mp4:hls:", "")))
+
+# 	if debug:
+# 		print_info(f"downloading {len(paths)} chunks")
+
+# 	init_chunk_path = path.replace(".mp4", "_init.mp4")
+
+# 	# downloading chunks
+# 	download_file(m3u8_url.replace(".m3u8", "_init.mp4"), init_chunk_path, debug)
+# 	for i in range(len(urls)):
+# 		download_file(urls[i], paths[i], debug)
+
+# 	if debug:
+# 		print_info(f"concating {len(paths)} chunks")
+
+# 	# concating
+# 	cat_command = f"cat {init_chunk_path} "
+# 	for _path in paths:
+# 		cat_command += f" {_path} "
+# 	cat_command += f" > {path}"
+# 	os.system(cat_command)
+
+# 	if debug:
+# 		print_info("cleanup")
+
+# 	# cleanup
+# 	os.system(f"rm -f {init_chunk_path}")
+# 	for _path in paths:
+# 		os.system(f"rm -f {_path}")
+
+# 	if debug:
+# 		print_ok(f"downloaded {path}")
+
+
 @measure
-def download_m3u8(m3u8_url: str, path: str, debug=False):
+def download_m3u8(m3u8_url: str, path: str, debug=False, prefix=""):
 	if debug:
 		print_info(f"download_m3u8 path={path}")
 	playlist = m3u8.load(m3u8_url)
 	urls = []
 	paths = []
 	for segment in playlist.segments:
-		url = segment.uri if segment.uri.startswith('http') else os.path.join(os.path.dirname(m3u8_url), segment.uri)
+		
+		if segment.uri.startswith('http'):
+			url = segment.uri 
+		else:
+			if len(prefix) > 0:
+				url = os.path.join(os.path.dirname(prefix), segment.uri)
+			else:
+				url = os.path.join(os.path.dirname(m3u8_url), segment.uri)
+		print(url)
 		urls.append(url)
 		# TODO: cat proper way
-		paths.append(os.path.basename(url.replace(".mp4:hls:", "")))
+		segment_path = os.path.basename(url.split("?")[0].replace(".mp4:hls:", ""))
+		paths.append(segment_path)
 
 	if debug:
 		print_info(f"downloading {len(paths)} chunks")
-	download_files(urls, paths, False)
+
+	# download_files(urls, paths, True)
+	for i in range(len(urls)):
+		_path = os.path.basename(paths[i]).split("?")[0]
+		download_file(urls[i], _path, debug)
 
 	with open('file_list.txt', 'w+') as f:
 		for ts_path in paths:
@@ -111,6 +159,7 @@ def download_m3u8(m3u8_url: str, path: str, debug=False):
 
 	if debug:
 		print_info(f"concating {len(paths)} chunks")
+		print(f"ffmpeg -hide_banner -loglevel panic -y -f concat -safe 0 -i 'file_list.txt' -c copy '{path}'")
 	os.system(f"ffmpeg -hide_banner -loglevel panic -y -f concat -safe 0 -i 'file_list.txt' -c copy '{path}'")
 	if debug:
 		print_info("cleanup")

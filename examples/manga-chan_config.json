@@ -2,6 +2,8 @@
 	"startup_timeout": 1,
 	"action_timeout": 1,
 	"data": {
-		"Hells_paradise": "https://manga-chan.me/download/92565-jigokuraku.html"
+		"Hells_paradise": "https://manga-chan.me/download/92565-jigokuraku.html",
+		"Death_Note": "https://manga-chan.me/download/3180-death-note.html",
+		"Jujutsu_Kaisen": "https://manga-chan.me/download/95944-jujutsu-kaisen.html"
 	}
 }
