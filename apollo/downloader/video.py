@@ -20,13 +20,15 @@ def measure(func):
 
 
 def download_file(url: str, path: str, headers: Iterable[Tuple[str, str]], debug=False):
-	curl_command = f"curl '{url}'" + "".join([f"-H {key}: {value} \\ " for key, value in headers]) + "-o {path} > /dev/null"
-	os.system(curl_command)
+	# curl_command = f"curl '{url}' " + " ".join([f"-H '{key}: {value}'" for key, value in headers]) + f" -o {path}"
+	wget_command = f"wget '{url}' -O '{path}'"
+	print_info(f'run "{wget_command}"')
+	os.system(wget_command)
 	
 	try:
 		_ = os.stat(path).st_size
 	except FileNotFoundError:
-		print_error(f"curl error for url={url} path={path}, headers={headers}, command={curl_command}")
+		print_error(f"wgetcurl error for url={url} path={path}, headers={headers}, command={wget_command}")
 	if debug:
 		print_ok(f"downloaded path={path} url={url}")
 
