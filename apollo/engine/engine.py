@@ -64,6 +64,13 @@ def CLICK_CLASS(class_name: str, engine: Engine | None = None):
 	elements = engine.find_elements("", By.XPATH, f"//*[contains(@class, '{class_name}')]")
 	engine.click(elements[0])
 
+@command
+def TYPE(xpath: str, text: str, clear=False, enter=False, engine: Engine | None = None):
+	if not engine:
+		return
+	element = engine.find_element("", xpath)
+	engine.type(element, text, clear, enter)
+
 
 @command
 def SWITCH_TO_FRAME(xpath: str, engine: Engine | None = None):
