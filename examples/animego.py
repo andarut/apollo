@@ -12,7 +12,8 @@ ANIME_KEY = "Lazarus"
 
 config = json.load(open("animego_config.json", "r"))["data"][ANIME_KEY]
 URL = config["URL"]
-start_episode = 2 # set -1 to download all avaliable episods
+VOICES = config["VOICES"]
+start_episode = 1 # set -1 to download all avaliable episods
 
 def episode_template(num):
     return f"Lazarus.E{num:02}.mp4"
@@ -37,14 +38,16 @@ Apollo.exec([
     ZOOM(40),
 
     # click watch button
-    CLICK_XPATH("/html/body/div[4]/div/div[1]/div/div[1]/main/div/div[1]/div[1]/div[2]/a/span[2]"),
-    
-    # select audio
-    CLICK_XPATH("/html/body/div[4]/div/div[1]/div/div[1]/div[1]/div[2]/div[2]/div[2]/div/div/div[1]/span[2]/span"),
-    
+    # CLICK_XPATH("/html/body/div[4]/div/div[1]/div/div[1]/main/div/div[1]/div[1]/div[2]/a/span[2]"),
+    CLICK_TEXT("Смотреть онлайн"),
+
     # select episode
     TYPE('//*[@id="video-series-number-input"]', f"{current_episode}", enter=True),
     WAIT(2),
+
+    # select audio
+    # CLICK_XPATH("/html/body/div[4]/div/div[1]/div/div[1]/div[1]/div[2]/div[2]/div[2]/div/div/div[1]/span[2]/span"),
+    CLICK_TEXT(VOICES),
 
     # switch to player frame
 	SWITCH_TO_FRAME("/html/body/div[4]/div/div[1]/div/div[1]/div[1]/div[2]/div[2]/div[1]/div[1]/iframe"),
