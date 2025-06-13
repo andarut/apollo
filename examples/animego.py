@@ -5,63 +5,83 @@ import json
 sys.path.append("..")
 
 from apollo.engine.engine import *
+from apollo.downloader.video import download_chunks
 
 Apollo.debug = True
 
-ANIME_KEY = "Lazarus"
+def download_url(URL: str, i):
+    if os.path.exists(episode_template(i)): return
+    Apollo.exec([
+        GET(URL),
+        ZOOM(40),
+
+        # 18+
+        CLICK_TEXT("Мне есть 18+"),
+
+        # click watch button
+        # CLICK_XPATH("/html/body/div[4]/div/div[1]/div/div[1]/main/div/div[1]/div[1]/div[2]/a/span[2]"),
+        CLICK_TEXT("Смотреть онлайн"),
+
+        WAIT(2),
+
+        # select audio
+        CLICK_TEXT_AND_CLASS("Озвучка", "cursor-pointer"),
+        CLICK_TEXT_AND_CLASS(VOICES, "video-player-toggle-item-name"),
+
+        # switch player
+        # CLICK_TEXT("Плеер"),
+        # CLICK_TEXT_AND_CLASS("Kodik", "video-player-toggle-item-name"),
+
+        # select episode
+        TYPE('//*[@id="video-series-number-input"]', f"{i}", enter=True),
+        WAIT(2),
+
+        # switch to player frame
+        SWITCH_TO_FRAME("/html/body/div[4]/div/div[1]/div/div[1]/div[1]/div[2]/div[2]/div[1]/div[1]/iframe"),
+        
+        # click play
+        # CLICK_CLASS("play_button"),
+        CLICK_CLASS("vjs-big-play-button"),
+
+        # wait for ads
+        WAIT(120),
+
+        # wait for requests
+        WAIT(3),
+        SAVE_REQUESTS(),
+        QUIT(),
+
+        # download from requests
+        CUSTOM_COMMAND(lambda engine: download_episode(i, engine))
+    ])
+
+ANIME_KEY = "Demon.Slayer.S04"
 
 config = json.load(open("animego_config.json", "r"))["data"][ANIME_KEY]
-URL = config["URL"]
+
 VOICES = config["VOICES"]
-start_episode = 1 # set -1 to download all avaliable episods
 
 def episode_template(num):
-    return f"Lazarus.E{num:02}.mp4"
+    return f"{ANIME_KEY}.E{num:02}.mp4"
 
-current_episode = start_episode if start_episode != -1 else 1
-
-def download_episode(engine: Engine):
+def download_episode(i: int, engine: Engine):
     if not engine: return
     for request in Apollo.requests:
-        print(request.url)
         if ".m3u8" in request.url and ".mp4" in request.url:
             DOWNLOAD_FILE(
                 request.url.replace("360.mp4", "720.mp4").replace(":hls:manifest.m3u8", ""),
-                episode_template(current_episode),
+                episode_template(i),
                 request
             )(engine)
             break
+        if "init_1" in request.url:
+            # example: https://grace.ya-ligh.com/gr/GradwoRd89Y/5edd56a836463_init_1.m4s
+            base_url = request.url.split('_')[0]
+            download_chunks(base_url, episode_template(i), False)
 
-Apollo.exec([
-    GET(URL),
-    WAIT(2),
-    ZOOM(40),
 
-    # click watch button
-    # CLICK_XPATH("/html/body/div[4]/div/div[1]/div/div[1]/main/div/div[1]/div[1]/div[2]/a/span[2]"),
-    CLICK_TEXT("Смотреть онлайн"),
+URL = config["URL"]
+for i in range(1, 8+1):
+    download_url(URL, i)
 
-    # select episode
-    TYPE('//*[@id="video-series-number-input"]', f"{current_episode}", enter=True),
-    WAIT(2),
-
-    # select audio
-    # CLICK_XPATH("/html/body/div[4]/div/div[1]/div/div[1]/div[1]/div[2]/div[2]/div[2]/div/div/div[1]/span[2]/span"),
-    CLICK_TEXT(VOICES),
-
-    # switch to player frame
-	SWITCH_TO_FRAME("/html/body/div[4]/div/div[1]/div/div[1]/div[1]/div[2]/div[2]/div[1]/div[1]/iframe"),
-	WAIT(2),
-	
-    # click play
-    CLICK_CLASS("play_button"),
-
-    # wait for requests
-    WAIT(10),
-    SAVE_REQUESTS(),
-    WAIT(2),
-    QUIT(),
-
-    # download from requests
-    CUSTOM_COMMAND(lambda engine: download_episode(engine))
-])
+# download_chunks(base_url="https://grace.ya-ligh.com/gr/GradwoRd89Y/5edd56a836463", filename="test.mp4", debug=True)

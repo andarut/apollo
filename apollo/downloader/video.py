@@ -3,6 +3,9 @@ from rich.progress import Progress, BarColumn, TextColumn
 import m3u8
 from typing import Iterable, Tuple
 
+from concurrent.futures import ThreadPoolExecutor, wait, FIRST_EXCEPTION
+import multiprocessing
+
 from ..engine.logging import print_error, print_info, print_ok, print_warning, print_important
 
 from functools import wraps
@@ -259,4 +262,156 @@ def download_video(base_url: str, filename: str, debug=False):
 
 	if debug:
 		print_info("cleanup")
+	os.system("rm -f *.m4s video.mp4 audio.mp4")
+
+# chunks will be downloading until there are size is zero (that means that url is 404)
+@measure
+def download_chunks(base_url: str, filename: str, debug: bool=False):
+	# https://grace.ya-ligh.com/9g/9G1MJ7ZNXV8/oy7o9yccdrdvm_init_6.m4s
+	# https://grace.ya-ligh.com/9g/9G1MJ7ZNXV8/oy7o9yccdrdvm_init_1.m4s
+
+	# base_url = "https://grace.ya-ligh.com/9g/9G1MJ7ZNXV8/oy7o9yccdrdvm"
+
+	# for future parallization (to predermenied list of chunks)
+	def check_url_404(url):
+		if debug:
+			print_info(f"check for 404 {url}")
+		try:
+			response = requests.head(url, allow_redirects=True, timeout=5)
+			if response.status_code == 404:
+				raise requests.RequestException
+		except requests.RequestException:
+			raise requests.RequestException
+
+	def check_urls_404(urls, max_workers=None) -> int:
+		if max_workers is None:
+			max_workers = multiprocessing.cpu_count()
+
+		url_to_future = {}
+		with ThreadPoolExecutor(max_workers=max_workers) as executor:
+			for i, url in enumerate(urls):
+				future = executor.submit(check_url_404, url)
+				url_to_future[future] = i
+
+			done, not_done = wait(url_to_future.keys(), return_when=FIRST_EXCEPTION)
+
+			for future in not_done:
+				future.cancel()
+
+			for future in done:
+				exc = future.exception()
+				if exc:
+					failed_url = url_to_future[future]
+					return failed_url
+				
+	def _download_chunks(urls, paths, max_workers=None) -> int:
+		if max_workers is None:
+			max_workers = multiprocessing.cpu_count()
+
+		url_to_future = {}
+		with ThreadPoolExecutor(max_workers=max_workers) as executor:
+			for i, url in enumerate(urls):
+				path = paths[i]
+				future = executor.submit(download_chunk, url, path)
+				url_to_future[future] = i
+
+			done, not_done = wait(url_to_future.keys(), return_when=FIRST_EXCEPTION)
+
+			for future in not_done:
+				future.cancel()
+
+			for future in done:
+				exc = future.exception()
+				if exc:
+					failed_url = url_to_future[future]
+					return failed_url
+
+
+	def download_chunk(url, path):
+		if debug:
+			print_info(f"downlading chunk {path} from {url}")
+		os.system(f"wget -qO {path} {url}")
+		return os.path.getsize(path) == 0
+	
+	video_chunks = ["init_6.m4s"]
+	audio_chunks = ["init_1.m4s"]
+
+	video_urls = [f"{base_url}_init_6.m4s"]
+	audio_urls = [f"{base_url}_init_1.m4s"]
+	
+	# collect video chunks
+	video_i = 1
+	while video_i < 1000:
+		url = f"{base_url}_chunk_6_{video_i:05d}.m4s"
+		path = f"chunk_6_{video_i:05d}.m4s"
+		video_urls.append(url)
+		video_chunks.append(path)
+		video_i += 1
+
+	# collect audio chunks
+	audio_i = 1
+	while audio_i < 1000:
+		url = f"{base_url}_chunk_1_{audio_i:05d}.m4s"
+		path = f"chunk_1_{audio_i:05d}.m4s"
+		audio_urls.append(url)
+		audio_chunks.append(path)
+		audio_i += 1
+
+	video_chunks_count = check_urls_404(video_urls)
+	audio_chunks_count = check_urls_404(audio_urls)
+
+	# sure about +1 ???
+
+	video_urls = video_urls[:video_chunks_count + 1]
+	audio_urls = audio_urls[:audio_chunks_count + 1]
+
+	video_chunks = video_chunks[:video_chunks_count + 1]
+	audio_chunks = audio_chunks[:audio_chunks_count + 1]
+
+	if debug:
+		print_info(f"video_chunks_count = {video_chunks_count}")
+		print_info(f"video_urls = {len(video_urls)}")
+		print_info(f"video_chunks = {len(video_chunks)}")
+
+		print_info(f"audio_chunks_count = {audio_chunks_count}")
+		print_info(f"audio_urls = {len(audio_urls)}")
+		print_info(f"audio_chunks = {len(audio_chunks)}")
+
+	# download video chunks
+	if debug:
+		print_info("download video chunks")
+	_download_chunks(video_urls, video_chunks)
+	
+	# download audio chunks
+	if debug:
+		print_info("download audio chunks")
+	_download_chunks(audio_urls, audio_chunks)
+
+	# concat video chunks
+	if debug:
+		print_info("concat video chunks")
+	cat_cmd = "cat "
+	for path in video_chunks:
+		cat_cmd += f" {path}"
+	cat_cmd += " > video.mp4"
+	os.system(cat_cmd)
+
+	# concat audio chunks
+	if debug:
+		print_info("concat audio chunks")
+	cat_cmd = "cat "
+	for path in audio_chunks:
+		cat_cmd += f" {path}"
+	cat_cmd += " > audio.mp4"
+	os.system(cat_cmd)
+
+	# merge video and audio
+	if debug:
+		print_info("merge video and audio")
+	merge_cmd = f"ffmpeg -i video.mp4 -i audio.mp4 -c:v copy -c:a aac -map 0:v:0 -map 1:a:0 {filename}"
+	os.system(merge_cmd)
+
+	# clear
+	if debug:
+		print_info("clear")
 	os.system("rm -f *.m4s video.mp4 audio.mp4")

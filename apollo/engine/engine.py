@@ -55,7 +55,22 @@ def CLICK_TEXT(text: str, engine: Engine | None = None):
 	if not engine:
 		return
 	elements = engine.find_elements("", By.XPATH, f"//*[contains(text(), '{text}')]")
+	if len(elements) > 1:
+		print_warning(f"FOUND MORE THAN 1 ELEMENT WITH TEXT = {text}")
+	if len(elements) == 0:
+		print_error(f"ELEMENT WITH TEXT = {text} NOT FOUND")
 	engine.click(elements[0])
+
+@command
+def CLICK_TEXT_AND_CLASS(text: str, class_name: str, engine: Engine | None = None):
+	if not engine:
+		return
+	elements = engine.find_elements("", By.XPATH, f"//*[contains(text(), '{text}')]")
+	for element in elements:
+		element_class_name = element.selenium_element.get_attribute("class")
+		print(element_class_name)
+		if element_class_name and class_name in element_class_name:
+			engine.click(element)
 
 @command
 def CLICK_CLASS(class_name: str, engine: Engine | None = None):
@@ -68,7 +83,10 @@ def CLICK_CLASS(class_name: str, engine: Engine | None = None):
 def TYPE(xpath: str, text: str, clear=False, enter=False, engine: Engine | None = None):
 	if not engine:
 		return
-	element = engine.find_element("", xpath)
+	# element = engine.find_element("", xpath)
+	element = engine.find_elements("", By.XPATH, xpath)[0]
+	if element.is_none():
+		return
 	engine.type(element, text, clear, enter)
 
 
@@ -292,7 +310,10 @@ class Engine:
 		try:
 			# ActionChains(self.driver).move_to_element(element.selenium_element).click().perform()
 			element.selenium_element.click()
-			
+		except ElementNotInteractableException:
+			print_warning("Element not interactable")
+			print_info("Trying click with JS")
+			self.driver.execute_script("arguments[0].click();", element.selenium_element)
 		except TimeoutException:
 			print_warning("Timeout when click, trying again")
 			self.click(element)

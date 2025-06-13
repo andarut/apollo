@@ -111,8 +111,52 @@
 			"VOICES": "Студийная Банда"
 		},
 		"Lazarus": {
-			"URL": "https://animego.ac/anime/lazar-2762",
+			"URL": "https://v1.animego.bz/anime/lazar-2762",
 			"VOICES": "AniLibria"
+		},
+		"Demon.Slayer.S01": {
+			"URL": "https://v2.animego.bz/anime/klinok-rassekayuschiy-demonov-902",
+			"VOICES": "Студийная Банда"
+		},
+		"Demon.Slayer.S02.P01": {
+			"URL": "https://v2.animego.bz/anime/klinok-rassekayuschiy-demonov-beskonechnyy-poezd-1906",
+			"VOICES": "Студийная Банда"
+		},
+		"Demon.Slayer.S02.P02": {
+			"URL": "https://v2.animego.bz/anime/klinok-rassekayuschiy-demonov-kvartal-krasnyh-fonarey-1876",
+			"VOICES": "Студийная Банда"
+		},
+		"Demon.Slayer.S03": {
+			"URL": "https://v2.animego.bz/anime/klinok-rassekayuschiy-demonov-derevnya-kuznecov-2280",
+			"VOICES": "Flarrow Films"
+		},
+		"Demon.Slayer.S04": {
+			"URL": "https://v2.animego.bz/anime/klinok-rassekayuschiy-demonov-trenirovka-stolpov-v4-2544",
+			"VOICES": "Студийная Банда"
+		},
+		"Demon.Slayer.Film1": {
+			"URL": "https://v2.animego.bz/anime/klinok-rassekayuschiy-demonov-902",
+			"VOICES": "Студийная Банда"
+		},
+		"Demon.Slayer.Film2": {
+			"URL": "https://v2.animego.bz/anime/klinok-rassekayuschiy-demonov-902",
+			"VOICES": "Студийная Банда"
+		},
+		"Demon.Slayer.Film3": {
+			"URL": "https://v2.animego.bz/anime/klinok-rassekayuschiy-demonov-902",
+			"VOICES": "Студийная Банда"
+		},
+		"Guilty.Crown.S01": {
+			"URL": "https://animego.org/anime/korona-greshnika-940",
+			"VOICES": "AniLibria"
+		},
+		"Tomodachi.Game": {
+			"URL": "https://animego.org/anime/igra-druzey-2002",
+			"VOICES": "Профессиональный многоголосый"
+		},
+		"Death Parade": {
+			"URL": "https://animego.org/anime/parad-smerti-1570",
+			"VOICES": "Профессиональный многоголосый"
 		}
 	}
 }
