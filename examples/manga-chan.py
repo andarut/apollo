@@ -1,99 +1,71 @@
 #!../.venv/bin/python3
 
-import json, time, os, sys, multiprocessing, glob
-
+import sys
+import json
 sys.path.append("..")
 
-from apollo.downloader.video import download_files, download_m3u8
-from apollo.engine.logging import print_error, print_info, print_ok, print_warning
-from apollo.engine.engine import Engine, By
+from apollo.engine.engine import *
+from apollo.downloader.video import download_chunks
 
-DEBUG = True
+Apollo.debug = True
 
-with open("manga-chan_config.json") as config_file:
-	config = json.loads(config_file.read())
+def download_url(URL: str):
+	Apollo.exec([
+		GET(URL),
 
-STARTUP_TIMEOUT = config["startup_timeout"]
-ACTION_TIMEOUT = config["action_timeout"]
+		ZOOM(20),
 
-def parse_chapter(url, link, i, urls):
-    engine = Engine(url, False)
-    try:
-        href = engine.find_elements("href", By.PARTIAL_LINK_TEXT, link)[0]
-    except IndexError:
-        engine.quit()
-        print(f"retry {link}")
-        parse_chapter(url, link, i, urls)
-    engine.click(href)
-    for request in engine.driver.requests:
-        if ".zip" in request.url:
-            urls[i] = request.url
-            break
-    engine.quit()
+		# download from hrefs
+		CUSTOM_COMMAND(lambda engine: download_manga(engine))
+	])
 
-def download_url(url, link):
-    os.system(f'wget -O "{link}" "{url}"')
+ANIME_KEY = "Demon_Slayer"
 
-def download(filename, url):
-    engine = Engine(url, DEBUG)
-    hrefs = engine.find_elements("hrefs", By.TAG_NAME, "a")
-    links = []
-    for href in hrefs:
-        link = href.get("href")
-        if "download.php" in link:
-            links.append(href.selenium_element.text)
-    engine.quit()
+URL = json.load(open("manga-chan_config.json", "r"))["data"][ANIME_KEY]
 
-    manager = multiprocessing.Manager()
-    urls = manager.dict()
+def download_manga(engine: Engine):
+	if not engine: return
+	hrefs = engine.find_elements("HREFS", By.PARTIAL_HREF_TEXT, "download.php")
 
-    for i in range(len(links)):
-        link = links[i]
-        print(f"parse {link}")
-        parse_chapter(url, link, i, urls)
+	if len(hrefs) == 0:
+		print_error("hrefs not found")
+		return
 
-    processes = []
-    for key, value in urls.items():
-        link = links[key]
-        if DEBUG:
-            print_info(f"create process for href={value}")
-        process = multiprocessing.Process(target=download_url, args=(value, link, ))
-        processes.append(process)
-        process.start()
-
-    for process in processes:
-        process.join()
-
-    for link in links:
-        folder = link.replace(".zip", "")
-        os.system(f"unzip {link} -d {folder}")
-        os.system(f"magick mogrify -format png {folder}/*.avif")
-        os.system(f"magick mogrify -format png {folder}/*.jpg")
-        os.system(f"magick {folder}/*.png {folder}.pdf")
-
-    os.system(f"pdfunite *.pdf {filename}.pdf")
-
-if __name__ == '__main__':
-	anime = "Jujutsu_Kaisen"
-	# download(anime, config["data"][anime])
 	paths = []
-	for filepath in glob.glob("*.pdf"):	
-		if "jujutsu-kaisen" in filepath:
-			v, ch = filepath.replace("jujutsu-kaisen_", "").replace("v", "").replace("ch", "").replace(".pdf", "").split("_")
-			v = int(v)
-			if '.' in ch:
-				ch = float(ch)
-			else:
-				ch = int(ch)
-			new_filepath = f"jk{ch:03}.pdf"
-			paths.append(new_filepath)
-			os.system(f"mv {filepath} {new_filepath}")
-		else:
-			paths.append(filepath)
-	paths.sort()
+
+	print_info("download started")
+
+	for href in hrefs:
+		zip_path = f"{href.text().replace(".zip", "")}_manga-chan.me.zip"
+		folder = zip_path.split("ch")[1].replace("iy-demonov-", "").split(".zip")[0].replace("_manga-", "")
+		result_path = f"{folder}/{folder}.pdf"
+		zip_exist = os.path.exists(zip_path)
+		folder_exist = os.path.exists(folder)
+		print_info(f"{zip_exist} {zip_path}")
+		
+		if not zip_exist:
+			href.selenium_element.click()
+			zip_url = [request for request in engine.driver.requests if ".zip" in request.url][-1]
+			os.system(f'wget -O "{zip_path}" "{zip_url}"')
+
+		if not folder_exist or not os.path.exists(result_path):
+			os.system(f"unzip {zip_path} -d {folder}")
+			os.system(f"magick mogrify -format png {folder}/*.avif")
+			os.system(f"magick mogrify -format png {folder}/*.jpeg")
+			os.system(f"magick mogrify -format png {folder}/*.jpg")
+			os.system(f"magick {folder}/*.png {result_path}")
+			
+		paths.append(result_path)
+
+	print_info("starting concating")
+
+	paths.sort(key=lambda x: float(x.split('/')[0]) )
+	print(paths)
 	string = ""
 	for path in paths:
 		string += f"{path} "
-	os.system(f"pdfunite {string} {anime}.pdf")
+	os.system(f"pdfunite {string} {ANIME_KEY}.pdf")
 
-	# os.system(f"gs -q -dNOPAUSE -dBATCH -sDEVICE=pdfwrite -sOutputFile={anime}_.pdf {string}")
+	print_info("download finished")
+
+download_url(URL)

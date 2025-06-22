@@ -189,6 +189,9 @@ class By:
 	CLASS_NAME = "class name"
 	CSS_SELECTOR = "css selector"
 
+	# my locator strategies
+	PARTIAL_HREF_TEXT = "partial href text"
+
 class Engine:
 	ACTION_TIMEOUT = 10
 	STARTUP_TIMEOUT = 10
@@ -293,7 +296,12 @@ class Engine:
 			print_info(f"find elements name={name} by={by} value={value}")
 		elements = []
 		try:
-			for el in self.driver.find_elements(by, value):
+			driver_elements: List = []
+			if by == By.PARTIAL_HREF_TEXT:
+				driver_elements = self.driver.find_elements(By.XPATH, f"//a[contains(@href, '{value}')]")
+			else:
+				driver_elements = self.driver.find_elements(by, value)
+			for el in driver_elements:
 				element = Element(name, "")
 				element.selenium_element = el
 				elements.append(element)

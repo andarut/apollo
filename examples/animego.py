@@ -16,7 +16,7 @@ def download_url(URL: str, i):
         ZOOM(40),
 
         # 18+
-        CLICK_TEXT("Мне есть 18+"),
+        # CLICK_TEXT("Мне есть 18+"),
 
         # click watch button
         # CLICK_XPATH("/html/body/div[4]/div/div[1]/div/div[1]/main/div/div[1]/div[1]/div[2]/a/span[2]"),
@@ -40,11 +40,12 @@ def download_url(URL: str, i):
         SWITCH_TO_FRAME("/html/body/div[4]/div/div[1]/div/div[1]/div[1]/div[2]/div[2]/div[1]/div[1]/iframe"),
         
         # click play
-        # CLICK_CLASS("play_button"),
-        CLICK_CLASS("vjs-big-play-button"),
+        # TODO: check for avaliable players
+        CLICK_CLASS("play_button"),
+        # CLICK_CLASS("vjs-big-play-button"),
 
         # wait for ads
-        WAIT(120),
+        # WAIT(120),
 
         # wait for requests
         WAIT(3),
@@ -55,7 +56,7 @@ def download_url(URL: str, i):
         CUSTOM_COMMAND(lambda engine: download_episode(i, engine))
     ])
 
-ANIME_KEY = "Demon.Slayer.S04"
+ANIME_KEY = "Lazarus"
 
 config = json.load(open("animego_config.json", "r"))["data"][ANIME_KEY]
 
@@ -81,7 +82,6 @@ def download_episode(i: int, engine: Engine):
 
 
 URL = config["URL"]
-for i in range(1, 8+1):
-    download_url(URL, i)
+download_url(URL, 11)
 
 # download_chunks(base_url="https://grace.ya-ligh.com/gr/GradwoRd89Y/5edd56a836463", filename="test.mp4", debug=True)
