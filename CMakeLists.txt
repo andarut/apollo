@@ -14,6 +14,7 @@ find_package(Boost REQUIRED)
 
 add_executable(apollo
   src/main.cpp
+  src/CDPConnection.cpp
 )
 target_compile_features(apollo PRIVATE cxx_std_20)
 
