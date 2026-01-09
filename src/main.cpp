@@ -1,5 +1,7 @@
 #include <boost/asio.hpp>
 #include <boost/asio/awaitable.hpp>
+#include <boost/asio/co_spawn.hpp>
+#include <boost/asio/detached.hpp>
 #include <boost/asio/use_awaitable.hpp>
 #include <boost/beast/http/field.hpp>
 #include <boost/beast/websocket.hpp>
@@ -58,9 +60,10 @@ awaitable<std::optional<std::string>> get_cdp_ws_url(asio::io_context& ioc) {
 int main() {
     asio::io_context ioc;
 
-    apl::CDPConnection conn(ioc, "sfd");
-    conn.connect();
-
+    co_spawn(ioc, [&]() -> awaitable<void> {
+      apl::CDPConnection conn(ioc, "ws://127.0.0.1:9222/devtools/browser/179c5e3f-6f1a-418e-a9e5-7a9431bee1d6");
+      co_await conn.connect();
+    }, detached);
     ioc.run();
     return 0;
 }

@@ -48,7 +48,14 @@ public:
           INFO("msg: %s\n", msg.dump().c_str());
           if(msg.contains("id")) {
             std::size_t id = msg["id"].get<std::size_t>();
-            deliver_response(id, msg);
+            std::shared_ptr<std::promise<json>> p;
+            auto it = mPending.find(id);
+            if(it != mPending.end()) {
+              p = it->second;
+            }
+            if(p) {
+              p->set_value(msg);
+            }
           } else if(msg.contains("method")) {
             // handle_event  
           }
@@ -61,14 +68,12 @@ public:
   awaitable<json> send_command(const std::string& method, const json& params);
 private:
   awaitable<json> wait_for_response(std::size_t id);
-  void deliver_response(std::size_t id, const json& msg);
   awaitable<std::size_t> async_send(const json& msg);
   awaitable<json> async_read();
   std::optional<std::string> getIdFromWsUrl(const std::string& wsUrl);
 private:
   asio::io_context& mIoc;
-  // TODO: use std::unordered_map<std::size_t, std::shared_ptr<std::promise<json>>>
-  std::unordered_map<std::size_t, asio::experimental::channel<void, std::string>> mPending; // map of request id : coroutine that waits its data
+  std::unordered_map<std::size_t, std::shared_ptr<std::promise<json>>> mPending; // map of request id : coroutine that waits its data
   tcp::resolver mResolver; // TODO: store endpoints instead
   ws::stream<tcp::socket> mSocket;
   std::size_t mCommandId;

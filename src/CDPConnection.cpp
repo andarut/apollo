@@ -15,6 +15,7 @@ std::optional<std::string> CDPConnection::getIdFromWsUrl(const std::string& wsUr
 
 awaitable<int> CDPConnection::connect()
 {
+  INFO("Trying to connect to %s\n", mWsUrl.c_str());
   try {
     auto url = parseUrl(mWsUrl);
     auto endpoints = co_await mResolver.async_resolve(url.host, url.port, asio::use_awaitable);
@@ -27,8 +28,7 @@ awaitable<int> CDPConnection::connect()
       mId = *idOpt;
       INFO("Connection id: %s\n", mId.c_str());
     }
-
-co_await asio::async_connect(mSocket.next_layer(), endpoints, asio::use_awaitable);
+    co_await asio::async_connect(mSocket.next_layer(), endpoints, asio::use_awaitable);
     co_await mSocket.async_handshake("localhost", url.path, asio::use_awaitable);
   } catch (const boost::system::system_error& e) {
     ERROR("Failed to connect\n");
@@ -37,10 +37,9 @@ co_await asio::async_connect(mSocket.next_layer(), endpoints, asio::use_awaitabl
     ERROR("Other error\n");
     co_return 2;
   }
-
+  INFO("Connection success\n");
   co_return 0;
 }
-
 awaitable<std::size_t> CDPConnection::async_send(const json& msg)
 {
   std::string payload = msg.dump();
@@ -59,25 +58,16 @@ awaitable<json> CDPConnection::async_read() {
 awaitable<json> CDPConnection::send_command(const std::string& method, const json& params) {
   std::size_t commandId = mCommandId++;
   json msg = {{"id", commandId}, {"method", method}, {"params", params}};
+  auto p = std::make_shared<std::promise<json>>();
+  mPending[commandId] = p;
   co_await async_send(msg);
-  json resp = co_await wait_for_response(commandId);
+  json resp = co_await co_spawn(mIoc,
+    [p]() -> asio::awaitable<json> {
+        co_return p->get_future().get();  // blocks coroutine until reader sets
+    },
+    asio::use_awaitable
+  );
+  mPending.erase(commandId);
   co_return resp;
-}
-
-awaitable<json> CDPConnection::wait_for_response(std::size_t id)
-{
-  asio::experimental::channel<void, std::string> chan(mIoc, 1);
-  mPending[id] = chan;
-  auto resp = co_await chan.async_receive(asio::use_awaitable);
-  mPending.erase(id);
-  co_return json::parse(resp);
-}
-
-void CDPConnection::deliver_response(std::size_t id, const json& msg)
-{
-  auto it = mPending.find(id);
-  if(it != mPending.end()) {
-    it->second.try_send(msh.dump()); 
-  }
 }
 
