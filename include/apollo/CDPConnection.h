@@ -1,6 +1,7 @@
 #ifndef CDP_CONNECTION_H
 #define CDP_CONNECTION_H
 
+#include <boost/asio/io_context.hpp>
 #include <cstddef>
 #include <string>
 #include <unordered_map>
@@ -33,39 +34,16 @@ namespace apl
 class CDPConnection
 {
 public:
-  CDPConnection(asio::io_context& ioc, std::string&& wsUrl)
-    : mWsUrl(std::move(wsUrl)),
+  CDPConnection(asio::io_context& ioc) : 
       mResolver(ioc.get_executor()),
       mSocket(ioc.get_executor()),
       mCommandId(1),
       mIoc(ioc)
   {
-    co_spawn(
-      ioc.get_executor(),
-      [&]() -> boost::asio::awaitable<void> {
-        while (true) {
-          json msg = co_await async_read();
-          INFO("msg: %s\n", msg.dump().c_str());
-          if(msg.contains("id")) {
-            std::size_t id = msg["id"].get<std::size_t>();
-            std::shared_ptr<std::promise<json>> p;
-            auto it = mPending.find(id);
-            if(it != mPending.end()) {
-              p = it->second;
-            }
-            if(p) {
-              p->set_value(msg);
-            }
-          } else if(msg.contains("method")) {
-            // handle_event  
-          }
-        }
-      },
-      detached
-    );
+    INFO("CDP Connection constructor\n");
   }
-  awaitable<int> connect();
-  awaitable<json> send_command(const std::string& method, const json& params);
+  awaitable<int> connect(const std::string& wsUrl);
+  awaitable<json> send_command(const std::string& method, const json& params, const std::string& sessionId="");
 private:
   awaitable<json> wait_for_response(std::size_t id);
   awaitable<std::size_t> async_send(const json& msg);
@@ -73,7 +51,9 @@ private:
   std::optional<std::string> getIdFromWsUrl(const std::string& wsUrl);
 private:
   asio::io_context& mIoc;
-  std::unordered_map<std::size_t, std::shared_ptr<std::promise<json>>> mPending; // map of request id : coroutine that waits its data
+  // TODO: maybe there is a way to store corouties
+  //std::unordered_map<std::size_t, std::function<void(const json&)>> mPending;
+  //std::unordered_map<std::size_t, std::shared_ptr<std::promise<json>>> mPending; // map of request id : coroutine that waits its data
   tcp::resolver mResolver; // TODO: store endpoints instead
   ws::stream<tcp::socket> mSocket;
   std::size_t mCommandId;
